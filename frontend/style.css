@@ -361,8 +361,9 @@ th {
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--text-secondary);
-    padding: 1rem 0; /* Add padding top so it doesn't touch the very top edge abruptly */
+    padding: 1rem 0;
     border-bottom: 1px solid var(--panel-border);
+    text-align: left;
 }
 
 td {
