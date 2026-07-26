@@ -22,7 +22,7 @@
     <tr>
       <td align="center" width="250">
         <br/>
-        <a href="https://queuectl.vercel.app">
+        <a href="https://queuectl-one.vercel.app">
           <img src="https://img.shields.io/badge/⬢%20VIEW%20LIVE%20FRONTEND-F5F3EC?style=for-the-badge&logoColor=black&color=F5F3EC&labelColor=1A1A1A" alt="Live Demo" />
         </a>
         <br/>
