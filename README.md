@@ -1,17 +1,58 @@
-# 🚀 QueueCTL: Distributed Background Job Queue
+<div align="center">
 
-An end-to-end, production-grade distributed background job queue system. Designed to run completely locally via a robust CLI or deployed to the cloud with a real-time, interactive frontend dashboard. 
+<h1 align="center">
+  <code>// QueueCTL : DISTRIBUTED BACKGROUND JOB QUEUE //</code>
+</h1>
 
-Built using Python, SQLite (WAL mode), HTML/CSS/JS (Zero Dependencies), Render, and Vercel.
+<p align="center">
+  An end-to-end, production-grade distributed background job queue system. Designed to run completely locally via a robust CLI or deployed to the cloud with a real-time, interactive frontend dashboard.
+</p>
 
-### Live Demo:
-- 🌐 **Frontend Dashboard (Vercel):** [https://queuectl.vercel.app](https://queuectl.vercel.app) *(Replace with your Vercel URL)*
-- ⚙️ **Backend API (Render):** [https://queuectl-sl39.onrender.com](https://queuectl-sl39.onrender.com)
-- 📹 **Demo Video:** *(Add link here)*
+<p align="center">
+  <img src="https://img.shields.io/badge/PYTHON-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/SQLITE-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/VANILLA_JS-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/VANILLA_CSS-1572B6?style=for-the-badge&logo=css3&logoColor=white" alt="CSS3" />
+  <img src="https://img.shields.io/badge/RENDER-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Render" />
+  <img src="https://img.shields.io/badge/VERCEL-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
+</p>
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="250">
+        <br/>
+        <a href="https://queuectl.vercel.app">
+          <img src="https://img.shields.io/badge/⬢%20VIEW%20LIVE%20FRONTEND-F5F3EC?style=for-the-badge&logoColor=black&color=F5F3EC&labelColor=1A1A1A" alt="Live Demo" />
+        </a>
+        <br/>
+        <br/>
+      </td>
+      <td align="center" width="250">
+        <br/>
+        <a href="https://queuectl-sl39.onrender.com">
+          <img src="https://img.shields.io/badge/⚙️%20VIEW%20RENDER%20API-1A1A1A?style=for-the-badge" alt="Render API" />
+        </a>
+        <br/>
+        <br/>
+      </td>
+      <td align="center" width="250">
+        <br/>
+        <a href="#">
+          <img src="https://img.shields.io/badge/📹%20WATCH%20DEMO%20VIDEO-1A1A1A?style=for-the-badge" alt="Demo Video" />
+        </a>
+        <br/>
+        <br/>
+      </td>
+    </tr>
+  </table>
+</div>
+
+</div>
 
 ---
 
-## 🏗️ System Architecture
+## ✦ System Architecture
 
 ```mermaid
 graph TB
@@ -42,31 +83,28 @@ graph TB
 
 ---
 
-## 🌟 Features & Architecture
+## ✦ Key Features
 
-### 1. Robust Distributed Concurrency
+### ⚡ Distributed Concurrency
 Run multiple worker processes across different terminals safely. Atomic job claiming via SQLite `UPDATE ... RETURNING` combined with `journal_mode=WAL` prevents double-execution and database lockouts under heavy parallel workloads.
 
-### 2. Crash Recovery & Heartbeats
+### 🛡️ Crash Recovery & Heartbeats
 Detects `SIGKILL`ed workers via an advanced heartbeat mechanism. Active workers ping the database every 15 seconds. If a job is `processing` but hasn't received a heartbeat in 45 seconds, it is considered stale and gracefully recovered by another healthy worker.
 
-### 3. Exponential Backoff & Dead Letter Queue
+### 🔄 Exponential Backoff & Dead Letter Queue
 Jobs that fail (e.g., `exit 1`) are automatically retried with an exponential backoff formula. After exceeding the maximum retry limit (configurable on the fly), they are moved to a Dead Letter Queue (DLQ).
 ✨ **Bonus:** System administrators can interactively "Retry" or "Purge" dead jobs directly from the web dashboard.
 
-### 4. Interactive Real-Time Web Dashboard
+### 🖥️ Interactive Real-Time Web Dashboard
 A sleek, ultra-premium frontend built with Vanilla HTML/JS and CSS Grid.
 - **No Build Steps**: No React, no NPM. Pure web standards.
 - **Live Job History**: Watch jobs dynamically slide into the UI and transition from `pending` ➔ `processing` ➔ `completed`.
 - **Command Control Center**: An integrated terminal input allows you to enqueue bash commands directly from your browser.
 - **Decoupled Architecture**: Fully separated frontend (Vercel) and backend (Render) connected via a secure, CORS-enabled Python API.
 
-### 5. CLI-Native Administration
-Full management via simple CLI commands, including graceful shutdowns (`queuectl worker stop`), which safely signal running workers via `SIGTERM` to complete their in-flight jobs before exiting.
-
 ---
 
-## 🛠️ Local Setup & Testing
+## ✦ Local Setup & Testing
 
 **Prerequisites:** Python 3.8+ (No external pip packages required!)
 
@@ -91,14 +129,9 @@ Launch the zero-dependency Python HTTP server:
 ```
 Open `http://localhost:8080` in your browser. You can enqueue jobs directly from the UI or the CLI!
 
-### 4. Enqueue Jobs via CLI
-```bash
-./queuectl enqueue '{"id":"job1","command":"sleep 5 && echo Done"}'
-```
-
 ---
 
-## ☁️ Cloud Deployment (Render + Vercel)
+## ✦ Cloud Deployment (Render + Vercel)
 
 ### 1. Backend Deployment (Render)
 1. Push this repository to GitHub.
@@ -114,7 +147,7 @@ Open `http://localhost:8080` in your browser. You can enqueue jobs directly from
 
 ---
 
-## 📁 Project Structure
+## ✦ Project Structure
 
 ```text
 queuectl/
@@ -137,20 +170,7 @@ queuectl/
 
 ---
 
-## 🧪 API Endpoints (Backend)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/stats` | Returns aggregate counts and active worker metrics |
-| `GET` | `/api/jobs` | Returns the 50 most recent jobs and their statuses |
-| `GET` | `/api/dlq` | Returns all jobs currently in the Dead Letter Queue |
-| `POST` | `/api/enqueue` | Enqueues a new bash command into the system |
-| `POST` | `/api/dlq/retry` | Rescues a specific job from the DLQ back to pending |
-| `POST` | `/api/dlq/purge` | Permanently deletes all corrupted jobs from the DLQ |
-
----
-
-## ⚖️ How This Meets Evaluation Criteria
+## ✦ How This Meets Evaluation Criteria
 
 | Criteria | How We Deliver |
 |----------|----------------|
@@ -159,3 +179,8 @@ queuectl/
 | **Reliability** | Built-in exponential backoff, Dead Letter Queue, and worker heartbeat crash recovery. |
 | **UX & Dashboard** | A breathtaking, real-time frontend hosted on Vercel that interacts seamlessly with the backend. |
 | **Code Quality** | Zero external dependencies. Clean, modular Python structure with a full automated test suite. |
+
+<br>
+<div align="center">
+  Built with an obsession for detail and performance by <b>Harsh Kumar</b>
+</div>
