@@ -178,6 +178,4 @@ We've included a rigorous automated testing suite that validates the engine unde
 | **Code Quality** | Zero external dependencies. Modular Python architecture rigorously tested by an automated bash suite. |
 
 <br>
-<div align="center">
-  <i>Built with absolute precision.</i>
-</div>
+
