@@ -27,13 +27,13 @@ RETURNING id, command, attempts, max_retries;
 ## 2. A worker is SIGKILLed halfway through a job. Walk through, step by step, what state the job is in and how it eventually runs again. What is the worst-case delay before recovery?
 
 1. **Crash state:** When the worker is `SIGKILL`ed, no cleanup code runs. The job remains in the `processing` state in the SQLite database, and the `heartbeat_at` timestamp stops updating.
-2. **Detection:** All active workers periodically run the `recover_stale_jobs` function before they attempt to pull a new job from the queue. This function queries for jobs where `state = 'processing'` and `heartbeat_at` is older than 45 seconds (`datetime('now', '-45 seconds')`).
+2. **Detection:** All active workers periodically run the `recover_stale_jobs` function before they attempt to pull a new job from the queue. This function queries for jobs where `state = 'processing'` and `heartbeat_at` is older than 40 seconds (`datetime('now', '-40 seconds')`).
 3. **Recovery:** When a live worker detects this stale job, it assumes the original worker crashed. It increments the job's `attempts` counter and calculates the exponential backoff penalty. It then transitions the job to `failed` and sets `run_after` to the future backoff time. (If the attempts exceed `max_retries`, it goes straight to `dead`).
 4. **Subsequent execution:** Once the `run_after` time passes, any worker's subquery will pick it up again as a valid job to process.
 5. **Worst-case delay:** 
    - A worker's heartbeat is updated every 15 seconds.
-   - The threshold for being considered "stale" is 45 seconds without a heartbeat update.
-   - Therefore, the worst-case time for a crashed job to be identified and recovered by another active worker is just under **60 seconds** (the 45-second threshold + up to 14.9 seconds of lost heartbeat time before the crash).
+   - The threshold for being considered "stale" is 40 seconds without a heartbeat update.
+   - Therefore, the worst-case time for a crashed job to be identified and recovered by another active worker is just under **55 seconds** (the 40-second threshold + up to 14.9 seconds of lost heartbeat time before the crash), safely under the 60-second rule.
 
 ## 3. Does dlq retry reset attempts? Why is that the right call?
 
@@ -70,3 +70,9 @@ To implement `worker stop` across separate terminal sessions, I needed an Inter-
   ORDER BY priority DESC, created_at ASC 
   ```
 Because we isolated the job-claiming logic to a single SQL query in `worker.py`, implementing priorities would only require modifying a single SQL statement and adding one column. The rest of the architecture is completely resilient to this change.
+
+## 6. Do config changes affect already-enqueued jobs?
+
+Yes, but conditionally based on the job's current state:
+- **`max-retries`:** This config is locked in at the moment the job is created (it is stored in the `jobs` table as `max_retries`). Changing the global config will **not** affect already-enqueued jobs; they will respect their original maximum limit.
+- **`backoff-base`:** This config is evaluated dynamically at runtime whenever a job fails. If you change the `backoff-base`, the very next time any job fails, it will calculate its `delay` using the new global base. However, jobs that have *already* failed and are currently waiting with a scheduled `run_after` timestamp will not have their timestamp retroactively modified.
