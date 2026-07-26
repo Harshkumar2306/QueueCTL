@@ -79,7 +79,13 @@
                 </section>
 
                 <section class="dlq-section panel">
-                    <h2>Dead Letter Queue</h2>
+                    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin-bottom: 0;">Dead Letter Queue</h2>
+                        <button class="purge-btn" onclick="purgeDLQ()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Purge All
+                        </button>
+                    </div>
                     <div class="table-container">
                         <table id="dlq-table">
                             <thead>

@@ -42,6 +42,18 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                     self.send_error(400, "Missing job id")
             except Exception as e:
                 self.send_error(400, str(e))
+        elif path == "/api/dlq/purge":
+            conn = get_connection()
+            try:
+                with conn:
+                    conn.execute("DELETE FROM jobs WHERE state = 'dead'")
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "ok"}).encode('utf-8'))
+            except Exception as e:
+                self.send_error(500, str(e))
         elif path == "/api/enqueue":
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length).decode('utf-8')

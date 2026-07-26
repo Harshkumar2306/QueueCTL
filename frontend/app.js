@@ -136,6 +136,22 @@ async function submitJob() {
     }
 }
 
+async function purgeDLQ() {
+    if (!confirm("Are you sure you want to permanently delete all dead jobs?")) return;
+    try {
+        const res = await fetch(`${API_BASE}/dlq/purge`, {
+            method: 'POST'
+        });
+        if (res.ok) {
+            fetchData();
+        } else {
+            alert('Failed to purge DLQ.');
+        }
+    } catch (err) {
+        console.error('Purge error', err);
+    }
+}
+
 async function fetchData() {
     try {
         // Fetch stats & workers
