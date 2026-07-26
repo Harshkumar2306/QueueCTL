@@ -318,6 +318,29 @@ header {
 /* Tables */
 .table-container {
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 350px;
+    padding-right: 0.5rem;
+}
+
+/* Custom Glassmorphic Scrollbar */
+.table-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
 }
 
 table {
