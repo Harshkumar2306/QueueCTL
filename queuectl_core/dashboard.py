@@ -19,6 +19,13 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         else:
             self.serve_static(path)
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path
@@ -48,6 +55,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                 )
             self.send_response(200)
             self.send_header("Content-type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps({"status": "ok"}).encode('utf-8'))
         except Exception as e:
@@ -105,7 +113,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404)
             return
             
-        web_dir = os.path.join(os.path.dirname(__file__), 'web')
+        web_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
         file_path = os.path.join(web_dir, path.lstrip('/'))
         
         try:

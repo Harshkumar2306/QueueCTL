@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QueueCTL Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                <h1>QueueCTL</h1>
+            </div>
+            <div class="live-indicator">
+                <span class="pulse"></span> Live
+            </div>
+        </header>
+
+        <main>
+            <section class="stats-grid">
+                <div class="stat-card pending">
+                    <div class="stat-title">Pending</div>
+                    <div class="stat-value" id="stat-pending">0</div>
+                </div>
+                <div class="stat-card processing">
+                    <div class="stat-title">Processing</div>
+                    <div class="stat-value" id="stat-processing">0</div>
+                </div>
+                <div class="stat-card completed">
+                    <div class="stat-title">Completed</div>
+                    <div class="stat-value" id="stat-completed">0</div>
+                </div>
+                <div class="stat-card failed">
+                    <div class="stat-title">Failed (Backoff)</div>
+                    <div class="stat-value" id="stat-failed">0</div>
+                </div>
+                <div class="stat-card dead">
+                    <div class="stat-title">Dead (DLQ)</div>
+                    <div class="stat-value" id="stat-dead">0</div>
+                </div>
+            </section>
+
+            <div class="content-grid">
+                <section class="workers-section panel">
+                    <h2>Active Workers</h2>
+                    <div class="table-container">
+                        <table id="workers-table">
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Status</th>
+                                    <th>Uptime</th>
+                                    <th>Last Heartbeat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS injected -->
+                            </tbody>
+                        </table>
+                        <div class="empty-state" id="workers-empty">No active workers</div>
+                    </div>
+                </section>
+
+                <section class="dlq-section panel">
+                    <h2>Dead Letter Queue</h2>
+                    <div class="table-container">
+                        <table id="dlq-table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Failed Attempts</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS injected -->
+                            </tbody>
+                        </table>
+                        <div class="empty-state" id="dlq-empty">DLQ is empty</div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
