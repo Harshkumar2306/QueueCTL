@@ -1,6 +1,6 @@
 // CHANGE THIS TO YOUR RENDER URL BEFORE DEPLOYING TO VERCEL (e.g. 'https://queuectl.onrender.com/api')
 // If running locally, you can use 'http://localhost:8080/api'
-const API_BASE = '/api'; // fallback for local dashboard
+const API_BASE = 'https://queuectl-sl39.onrender.com/api'; // fallback for local dashboard
 
 function updateStat(id, newValue) {
     const el = document.getElementById(id);
