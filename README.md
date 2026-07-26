@@ -181,6 +181,4 @@ queuectl/
 | **Code Quality** | Zero external dependencies. Clean, modular Python structure with a full automated test suite. |
 
 <br>
-<div align="center">
-  Built with an obsession for detail and performance by <b>Harsh Kumar</b>
-</div>
+
