@@ -160,6 +160,86 @@ header {
     color: var(--text-primary);
 }
 
+.control-panel {
+    margin-bottom: 2rem;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+.enqueue-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .enqueue-form { flex-direction: column; }
+}
+
+.input-group {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 0 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.input-group:focus-within {
+    border-color: var(--color-pending);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.prompt {
+    color: var(--color-completed);
+    font-weight: bold;
+    margin-right: 0.75rem;
+    font-family: monospace;
+}
+
+#cmd-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 1rem 0;
+    font-size: 1rem;
+    font-family: monospace;
+    outline: none;
+}
+
+#cmd-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.enqueue-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--color-pending), #2563eb);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: max-content;
+}
+
+.enqueue-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.enqueue-btn:active {
+    transform: translateY(0);
+}
+
 .table-container {
     overflow-x: auto;
 }

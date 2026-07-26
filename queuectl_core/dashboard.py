@@ -42,6 +42,36 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
                     self.send_error(400, "Missing job id")
             except Exception as e:
                 self.send_error(400, str(e))
+        elif path == "/api/enqueue":
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+            try:
+                data = json.loads(body)
+                command = data.get('command')
+                if not command:
+                    self.send_error(400, "Missing command")
+                    return
+                
+                import uuid
+                job_id = f"job-{uuid.uuid4().hex[:8]}"
+                
+                from .db import get_config
+                max_retries = int(get_config('max-retries', '3'))
+                
+                conn = get_connection()
+                with conn:
+                    conn.execute(
+                        "INSERT INTO jobs (id, command, state, created_at, updated_at, attempts, max_retries) VALUES (?, ?, 'pending', datetime('now'), datetime('now'), 0, ?)",
+                        (job_id, command, max_retries)
+                    )
+                
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "ok", "id": job_id}).encode('utf-8'))
+            except Exception as e:
+                self.send_error(500, str(e))
         else:
             self.send_error(404)
 

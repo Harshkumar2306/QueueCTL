@@ -87,6 +87,28 @@ async function retryJob(jobId) {
     }
 }
 
+async function submitJob() {
+    const input = document.getElementById('cmd-input');
+    const command = input.value.trim();
+    if (!command) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/enqueue`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command: command })
+        });
+        if (res.ok) {
+            input.value = ''; // clear input
+            fetchData(); // refresh immediately
+        } else {
+            alert('Failed to enqueue job.');
+        }
+    } catch (err) {
+        console.error('Enqueue error', err);
+    }
+}
+
 async function fetchData() {
     try {
         // Fetch stats & workers
