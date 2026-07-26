@@ -62,12 +62,39 @@ function renderDLQ(dlq) {
     tbody.innerHTML = dlq.map(job => `
         <tr>
             <td style="font-family: monospace;">${job.id}</td>
+            <td style="font-family: monospace; color: var(--text-secondary); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${job.command.replace(/"/g, '&quot;')}">${job.command}</td>
             <td><span class="badge dead">${job.attempts} fails</span></td>
             <td>
                 <button class="retry-btn" onclick="retryJob('${job.id}')">Retry</button>
             </td>
         </tr>
     `).join('');
+}
+
+function renderJobs(jobs) {
+    const tbody = document.querySelector('#jobs-table tbody');
+    const emptyState = document.getElementById('jobs-empty');
+    
+    if (!jobs || jobs.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    
+    tbody.innerHTML = jobs.map(job => {
+        let statusClass = job.state;
+        return `
+            <tr>
+                <td style="font-family: monospace;">${job.id}</td>
+                <td style="font-family: monospace; color: var(--text-secondary);">${job.command}</td>
+                <td><span class="badge ${statusClass}">${job.state}</span></td>
+                <td style="color: var(--text-secondary)">${job.created_at.split(' ')[1] || job.created_at}</td>
+                <td>${job.attempts}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 async function retryJob(jobId) {
@@ -127,6 +154,11 @@ async function fetchData() {
         const dlqRes = await fetch(`${API_BASE}/dlq`);
         const dlqData = await dlqRes.json();
         renderDLQ(dlqData.dlq);
+
+        // Fetch Recent Jobs
+        const jobsRes = await fetch(`${API_BASE}/jobs`);
+        const jobsData = await jobsRes.json();
+        renderJobs(jobsData.jobs);
 
     } catch (err) {
         console.error('Dashboard fetch error', err);

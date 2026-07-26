@@ -85,6 +85,7 @@
                             <thead>
                                 <tr>
                                     <th>Job ID</th>
+                                    <th>Command</th>
                                     <th>Failed Attempts</th>
                                     <th>Action</th>
                                 </tr>
@@ -97,6 +98,26 @@
                     </div>
                 </section>
             </div>
+            <section class="history-section panel" style="margin-top: 2rem;">
+                <h2>Live Job History</h2>
+                <div class="table-container">
+                    <table id="jobs-table">
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Command</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th>Attempts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
+                    <div class="empty-state" id="jobs-empty">No jobs history available</div>
+                </div>
+            </section>
         </main>
     </div>
     <script src="app.js"></script>
