@@ -23,6 +23,13 @@ def get_connection(db_path=None):
 
 def init_db(db_path=None):
     conn = get_connection(db_path)
+    # Check if initialized to avoid write locks on every CLI call
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='jobs'")
+    if cur.fetchone():
+        conn.close()
+        return
+
     with conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS jobs (
@@ -63,7 +70,7 @@ def init_db(db_path=None):
                 heartbeat_at TIMESTAMP NOT NULL
             )
         """)
-    return conn
+    conn.close()
 
 def get_config(key, default, db_path=None):
     conn = get_connection(db_path)

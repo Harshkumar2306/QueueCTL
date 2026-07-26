@@ -87,51 +87,28 @@ def heartbeat_job(conn, job_id):
         pass
 
 def run_worker(count=1):
-    pid = os.getpid()
-    conn = get_connection()
-    
-    # Register worker
-    with conn:
-        conn.execute(
-            "INSERT INTO workers (pid, status, started_at, heartbeat_at) VALUES (?, 'active', datetime('now'), datetime('now'))",
-            (pid,)
-        )
-    
-    # Start worker heartbeat thread
-    hb_thread = threading.Thread(target=heartbeat_worker, args=(conn, pid), daemon=True)
-    hb_thread.start()
-
-    try:
-        # For multiple workers in foreground from one CLI invocation (count > 1), we could use multiprocessing,
-        # but the assignment mentions: "Multiple workers run in parallel — including workers started from separate terminal sessions (separate OS processes, not just threads)."
-        # If count > 1, we can fork or use subprocess. Let's keep it simple: `worker start` implies this process is a worker.
-        # If count > 1 is needed from ONE terminal, we can fork.
-        if count > 1:
-            children = []
-            for _ in range(count - 1):
-                child_pid = os.fork()
-                if child_pid == 0:
-                    # Child process
-                    run_single_worker()
-                    os._exit(0)
-                else:
-                    children.append(child_pid)
-            # Parent also acts as a worker
-            run_single_worker()
-            for child in children:
-                os.waitpid(child, 0)
-        else:
-            run_single_worker()
-    finally:
-        with conn:
-            conn.execute("DELETE FROM workers WHERE pid = ?", (pid,))
+    if count > 1:
+        children = []
+        for _ in range(count - 1):
+            child_pid = os.fork()
+            if child_pid == 0:
+                # Child process
+                run_single_worker()
+                os._exit(0)
+            else:
+                children.append(child_pid)
+        # Parent also acts as a worker
+        run_single_worker()
+        for child in children:
+            os.waitpid(child, 0)
+    else:
+        run_single_worker()
 
 def run_single_worker():
     pid = os.getpid()
     conn = get_connection()
     
-    # Register this specific child if it was forked, because the parent registered its own PID
-    # We do UPSERT just in case
+    # Register this worker
     with conn:
         conn.execute(
             "INSERT INTO workers (pid, status, started_at, heartbeat_at) VALUES (?, 'active', datetime('now'), datetime('now')) "
@@ -233,5 +210,8 @@ def run_single_worker():
                             WHERE id = ?
                         """, (new_attempts, job_id))
     finally:
-        with conn:
-            conn.execute("DELETE FROM workers WHERE pid = ?", (pid,))
+        try:
+            with conn:
+                conn.execute("DELETE FROM workers WHERE pid = ?", (pid,))
+        except Exception:
+            pass
