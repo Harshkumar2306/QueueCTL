@@ -36,14 +36,6 @@
         <br/>
         <br/>
       </td>
-      <td align="center" width="250">
-        <br/>
-        <a href="#">
-          <img src="https://img.shields.io/badge/📹%20WATCH%20DEMO%20VIDEO-1A1A1A?style=for-the-badge" alt="Demo Video" />
-        </a>
-        <br/>
-        <br/>
-      </td>
     </tr>
   </table>
 </div>
