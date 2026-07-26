@@ -14,10 +14,9 @@ def get_connection(db_path=None):
     path = db_path or get_db_path()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     
-    # timeout=10 is for busy waiting when locked.
-    # isolation_level=None enables autocommit, but we will explicitly control transactions using 'BEGIN EXCLUSIVE'
-    # when we need atomicity for claiming jobs.
-    conn = sqlite3.connect(path, timeout=10)
+    # isolation_level="IMMEDIATE" forces BEGIN IMMEDIATE, preventing deadlocks when multiple workers write.
+    conn = sqlite3.connect(path, timeout=10, isolation_level="IMMEDIATE")
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.row_factory = sqlite3.Row
     return conn
 

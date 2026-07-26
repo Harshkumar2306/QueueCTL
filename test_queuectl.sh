@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-DB_PATH="/tmp/test_queue.db"
+DB_PATH="./test_queue.db"
 export QUEUECTL_DB_PATH="$DB_PATH"
 QCTL="./queuectl"
 
@@ -9,7 +9,7 @@ cleanup() {
     echo "Cleaning up..."
     $QCTL worker stop >/dev/null 2>&1 || true
     kill $(jobs -p) 2>/dev/null || true
-    rm -f "$DB_PATH"
+    rm -f "$DB_PATH" "$DB_PATH-wal" "$DB_PATH-shm" "$DB_PATH-wal" "$DB_PATH-shm"
 }
 trap cleanup EXIT
 
@@ -49,7 +49,7 @@ fi
 echo "PASS: Scenario 2"
 
 echo "=== Scenario 3: Many jobs across multiple workers ==="
-rm -f "$DB_PATH" # reset DB
+rm -f "$DB_PATH" "$DB_PATH-wal" "$DB_PATH-shm" "$DB_PATH-wal" "$DB_PATH-shm" # reset DB
 for i in {1..20}; do
     $QCTL enqueue "{\"id\":\"job-many-$i\",\"command\":\"sleep 0.1\"}" >/dev/null
 done
@@ -68,7 +68,7 @@ fi
 echo "PASS: Scenario 3"
 
 echo "=== Scenario 4: Worker is SIGKILLed mid-job and job recovers ==="
-rm -f "$DB_PATH"
+rm -f "$DB_PATH" "$DB_PATH-wal" "$DB_PATH-shm"
 $QCTL config set max-retries 3
 $QCTL config set backoff-base 1
 
@@ -110,7 +110,7 @@ fi
 echo "PASS: Scenario 4"
 
 echo "=== Scenario 5: Jobs survive a full restart ==="
-rm -f "$DB_PATH"
+rm -f "$DB_PATH" "$DB_PATH-wal" "$DB_PATH-shm"
 $QCTL enqueue '{"id":"job-persist","command":"echo persisted"}'
 
 # "Restart" by simply doing nothing and seeing it in the DB (since no processes are running)

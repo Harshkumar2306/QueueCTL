@@ -124,29 +124,25 @@ def run_single_worker():
             recover_stale_jobs(conn, pid)
 
             # Attempt to claim a job atomically.
-            # SQLite 3.35+ supports RETURNING.
-            cur = conn.cursor()
-            
-            # We look for pending or failed jobs that are ready to run
-            # The query uses a subquery to find the oldest ready job and locks it.
-            # This is atomic because of the UPDATE ... RETURNING statement in a single SQLite transaction.
-            cur.execute("""
-                UPDATE jobs 
-                SET state = 'processing', 
-                    locked_by = ?, 
-                    heartbeat_at = datetime('now'), 
-                    updated_at = datetime('now')
-                WHERE id = (
-                    SELECT id FROM jobs 
-                    WHERE state IN ('pending', 'failed') 
-                    AND (run_after IS NULL OR run_after <= datetime('now'))
-                    ORDER BY created_at ASC 
-                    LIMIT 1
-                )
-                RETURNING id, command, attempts, max_retries;
-            """, (str(pid),))
-            
-            job = cur.fetchone()
+            with conn:
+                cur = conn.cursor()
+                cur.execute("""
+                    UPDATE jobs 
+                    SET state = 'processing', 
+                        locked_by = ?, 
+                        heartbeat_at = datetime('now'), 
+                        updated_at = datetime('now')
+                    WHERE id = (
+                        SELECT id FROM jobs 
+                        WHERE state IN ('pending', 'failed') 
+                        AND (run_after IS NULL OR run_after <= datetime('now'))
+                        ORDER BY created_at ASC 
+                        LIMIT 1
+                    )
+                    RETURNING id, command, attempts, max_retries;
+                """, (str(pid),))
+                
+                job = cur.fetchone()
             
             if not job:
                 time.sleep(1)
