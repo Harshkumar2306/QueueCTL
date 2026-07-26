@@ -23,7 +23,7 @@
       <td align="center" width="250">
         <br/>
         <a href="https://queuectl-one.vercel.app">
-          <img src="https://img.shields.io/badge/⬢%20VIEW%20LIVE%20FRONTEND-F5F3EC?style=for-the-badge&logoColor=black&color=F5F3EC&labelColor=1A1A1A" alt="Live Demo" />
+          <img src="https://img.shields.io/badge/⬢%20CLICK%20TO%20VIEW%20LIVE%20FRONTEND-F5F3EC?style=for-the-badge&logoColor=black&color=F5F3EC&labelColor=1A1A1A" alt="Live Demo" />
         </a>
         <br/>
         <br/>
@@ -31,7 +31,7 @@
       <td align="center" width="250">
         <br/>
         <a href="https://queuectl-sl39.onrender.com">
-          <img src="https://img.shields.io/badge/⚙️%20VIEW%20RENDER%20API-1A1A1A?style=for-the-badge" alt="Render API" />
+          <img src="https://img.shields.io/badge/⚙️%20CLICK%20TO%20VIEW%20RENDER%20API-1A1A1A?style=for-the-badge" alt="Render API" />
         </a>
         <br/>
         <br/>
@@ -39,7 +39,7 @@
       <td align="center" width="250">
         <br/>
         <a href="#">
-          <img src="https://img.shields.io/badge/📹%20WATCH%20DEMO%20VIDEO-1A1A1A?style=for-the-badge" alt="Demo Video" />
+          <img src="https://img.shields.io/badge/📹%20CLICK%20TO%20WATCH%20DEMO%20VIDEO-1A1A1A?style=for-the-badge" alt="Demo Video" />
         </a>
         <br/>
         <br/>
