@@ -7,6 +7,7 @@ from datetime import datetime
 
 from .db import init_db, get_connection, set_config, get_config
 from .worker import run_worker
+from .dashboard import run_server
 
 def print_json(data):
     print(json.dumps(data))
@@ -140,6 +141,9 @@ def cmd_config_set(args):
     set_config(key, value)
     print(f"Config '{key}' set to '{value}'")
 
+def cmd_dashboard(args):
+    run_server(port=args.port)
+
 def main():
     import sqlite3 # local import for catching exceptions
     init_db()
@@ -186,6 +190,10 @@ def main():
     c_set.add_argument("key")
     c_set.add_argument("value")
 
+    # dashboard
+    dashboard_parser = subparsers.add_parser("dashboard")
+    dashboard_parser.add_argument("--port", type=int, default=8080)
+
     args = parser.parse_args()
 
     if args.command == "enqueue":
@@ -207,3 +215,5 @@ def main():
     elif args.command == "config":
         if args.config_cmd == "set":
             cmd_config_set(args)
+    elif args.command == "dashboard":
+        cmd_dashboard(args)
