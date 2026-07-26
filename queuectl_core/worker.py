@@ -39,7 +39,7 @@ def recover_stale_jobs(conn, worker_id):
             SELECT id, attempts, max_retries
             FROM jobs 
             WHERE state = 'processing' 
-            AND heartbeat_at < datetime('now', '-45 seconds')
+            AND heartbeat_at < datetime('now', '-40 seconds')
         """)
         stale_jobs = cur.fetchall()
         
@@ -54,7 +54,7 @@ def recover_stale_jobs(conn, worker_id):
                 state = 'failed'
                 # backoff
                 base = int(get_config('backoff-base', '2'))
-                delay = base ** (attempts - 1)  # attempts is already incremented, so attempts-1 is the number of completed attempts
+                delay = base ** attempts  # attempts is the number of completed attempts
                 run_after = f"datetime('now', '+{delay} seconds')"
 
             if state == 'dead':
@@ -198,7 +198,7 @@ def run_single_worker():
                         """, (new_attempts, job_id))
                     else:
                         base = int(get_config('backoff-base', '2'))
-                        delay = base ** attempts
+                        delay = base ** new_attempts
                         conn.execute(f"""
                             UPDATE jobs 
                             SET state = 'failed', attempts = ?, updated_at = datetime('now'), 
