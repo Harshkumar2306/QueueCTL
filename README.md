@@ -60,18 +60,6 @@
 
 ---
 
-## 📑 Table of Contents
-1. [Live Environments](#-live-environments)
-2. [System Architecture](#-system-architecture)
-3. [Deep Dive: Engineering Features](#-deep-dive-engineering-features)
-4. [CLI Reference Guide](#-cli-reference-guide)
-5. [Local Setup & Testing](#-local-setup--testing)
-6. [Automated Test Suite](#-automated-test-suite)
-7. [Cloud Deployment](#-cloud-deployment-render--vercel)
-8. [Database Schema](#-database-schema)
-9. [Evaluation Criteria Checklist](#-evaluation-criteria-checklist)
-
----
 
 ## 🌐 Live Environments
 
