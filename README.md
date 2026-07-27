@@ -95,9 +95,11 @@ graph TD
         subgraph Workers ["queuectl_core/worker.py"]
             W1("⚙️ Parent/Child Process (os.fork)"):::process
             
-            HB1(("💓 threading.Thread")):::process
+            HB_W(("💓 Worker Heartbeat")):::process
+            HB_J(("💓 Job Heartbeat")):::process
             
-            W1 ---|"Spawns daemon thread"| HB1
+            W1 ---|"Spawns daemon threads"| HB_W
+            W1 ---|"Spawns daemon threads"| HB_J
         end
         
         CLI -.->|"os.kill(pid, SIGTERM)"| Workers
@@ -113,14 +115,15 @@ graph TD
 
     %% Routing & Data Flow
     UI ==>|"Fetch() / REST API"| API
-    CLI ==>|"INSERT INTO jobs"| DB
-    API ==>|"SELECT (Read-Only)"| DB
+    CLI ==>|"Read/Write (jobs, config, workers)"| DB
+    API ==>|"Read/Write (jobs, workers)"| DB
     
-    W1 ==>|"UPDATE jobs SET state='processing' RETURNING *"| DB
+    W1 ==>|"UPDATE jobs SET state='processing' RETURNING id..."| DB
     
-    HB1 -.->|"UPDATE workers SET heartbeat_at=now()"| DB
+    HB_W -.->|"UPDATE workers SET heartbeat_at=now()"| DB
+    HB_J -.->|"UPDATE jobs SET heartbeat_at=now()"| DB
     
-    W1 -.->|"UPDATE jobs SET state='dead'"| DB
+    W1 -.->|"UPDATE jobs SET state='completed'\|'failed'\|'dead'"| DB
 ```
 
 ---
