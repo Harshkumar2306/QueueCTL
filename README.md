@@ -77,30 +77,61 @@
 QueueCTL operates on a decoupled frontend/backend architecture. The backend utilizes a robust SQLite `WAL` (Write-Ahead Logging) strategy combined with atomic `UPDATE ... RETURNING` locks to guarantee that no two workers ever process the same job, even under extreme concurrency.
 
 ```mermaid
-graph TB
-    subgraph Frontend["Frontend (Vercel)"]
-        UI["Twilight Glassmorphic Dashboard (Vanilla JS)"]
-        UI --> |"REST API (CORS enabled)"| API
+graph TD
+    %% Custom Premium Styling
+    classDef frontend fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc
+    classDef backend fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#f8fafc
+    classDef storage fill:#334155,stroke:#f59e0b,stroke-width:2px,color:#f8fafc
+    classDef process fill:#1e1b4b,stroke:#a855f7,stroke-width:1px,stroke-dasharray: 5 5,color:#e9d5ff
+    classDef cli fill:#1e293b,stroke:#f43f5e,stroke-width:2px,color:#f8fafc
+
+    subgraph UserSpace ["User Interaction Layer"]
+        CLI("🖥️ QueueCTL CLI"):::cli
+        UI("✨ Vercel Glassmorphic Dashboard"):::frontend
     end
 
-    subgraph Backend["Backend (Render - Docker)"]
-        API["QueueCTL HTTP Server"]
-        API --> |"Read/Write"| DB
+    subgraph Backend ["Backend Engine (Render / Local OS)"]
+        API["🌐 HTTP API Server (dashboard.py)"]:::backend
         
-        W1["Worker Process 1"] --> |"Heartbeat (15s)"| DB
-        W2["Worker Process 2"] --> |"Heartbeat (15s)"| DB
-        W3["Worker Process N"] --> |"Heartbeat (15s)"| DB
+        subgraph Workers ["Parallel Worker Processes (os.fork)"]
+            W1("⚙️ Worker PID 1"):::process
+            W2("⚙️ Worker PID 2"):::process
+            WN("⚙️ Worker PID N"):::process
+            
+            HB1(("💓 Daemon Thread")):::process
+            HB2(("💓 Daemon Thread")):::process
+            HBN(("💓 Daemon Thread")):::process
+            
+            W1 --- HB1
+            W2 --- HB2
+            WN --- HBN
+        end
         
-        W1 -.-> |"Execute Bash"| JOB["Target Command"]
+        CLI -.->|"os.kill(SIGTERM)"| Workers
     end
 
-    subgraph Storage["Storage Layer"]
-        DB[("SQLite Database (WAL Mode)")]
+    subgraph Database ["Persistent Storage Layer"]
+        DB[("🗄️ SQLite Database")]:::storage
+        WAL["📝 Write-Ahead Log (WAL)"]:::storage
+        DLQ["💀 Dead Letter Queue"]:::storage
+        
+        DB --- WAL
     end
 
-    style Frontend fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-    style Backend fill:#d1fae5,stroke:#10b981,color:#064e3b
-    style Storage fill:#fef3c7,stroke:#f59e0b,color:#78350f
+    %% Routing & Data Flow
+    UI ==>|"REST API Fetch/POST (CORS)"| API
+    CLI ==>|"enqueue / config / worker start"| DB
+    API ==>|"Read / Write State"| DB
+    
+    W1 ==>|"UPDATE...RETURNING (Atomic Lock)"| DB
+    W2 ==>|"UPDATE...RETURNING (Atomic Lock)"| DB
+    WN ==>|"UPDATE...RETURNING (Atomic Lock)"| DB
+    
+    HB1 -.->|"Ping 15s (Health)"| DB
+    HB2 -.->|"Ping 15s (Health)"| DB
+    HBN -.->|"Ping 15s (Health)"| DB
+    
+    W1 -.->|"Retry Exhausted"| DLQ
 ```
 
 ---
