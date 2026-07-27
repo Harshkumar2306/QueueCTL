@@ -105,20 +105,34 @@ graph TB
 
 ---
 
-## ✦ Deep Dive: Engineering Features
+## ✦ Deep Dive: Backend Architecture & Engineering
 
-### ⚡ Distributed Concurrency & SQLite WAL
+QueueCTL's backend (`queuectl_core`) is engineered purely in Python without any external dependencies. It leverages native OS features to handle multiprocessing and signaling. 
+
+### 1. Core Modules Breakdown
+- **`cli.py` (The Entrypoint):** Uses `argparse` to parse commands. It validates JSON payloads for enqueuing and dynamically routes actions. 
+- **`db.py` (Storage & Concurrency):** Manages the SQLite connection pool. It forcefully enables `journal_mode=WAL` (Write-Ahead Logging) to allow concurrent reads and writes.
+- **`worker.py` (The Execution Engine):** The absolute core of the system. It handles `os.fork()` for multi-process scaling, executes shell commands via `subprocess.Popen()`, and manages POSIX signal trapping for graceful shutdowns.
+- **`dashboard.py` (The API Server):** Uses Python's built-in `http.server` to spin up a multi-threaded, CORS-enabled REST API that the Vercel frontend communicates with.
+
+### 2. Distributed Concurrency & Atomic Claiming
 Running multiple background workers concurrently across different terminal sessions usually causes database deadlocks. We solve this by:
-1. Enabling `journal_mode=WAL` (Write-Ahead Logging) in SQLite.
-2. Utilizing `isolation_level="IMMEDIATE"` to strictly queue parallel write requests.
-3. Using an atomic `UPDATE ... RETURNING` SQL statement so workers lock and claim a job in a single, uninterrupted transaction.
+1. Setting `isolation_level="IMMEDIATE"` on the SQLite connection. This strictly queues parallel write requests at the disk level.
+2. Utilizing an atomic `UPDATE ... RETURNING` SQL statement. When a worker queries for a `pending` job, it doesn't do a `SELECT` followed by an `UPDATE` (which causes race conditions). It claims the job, sets its own PID, and locks it in a single, uninterrupted transaction.
 
-### 🛡️ 40-Second Crash Recovery (Heartbeats)
-If a worker process is unexpectedly terminated (e.g., via `SIGKILL`), the job it was processing becomes orphaned.
-- **The Solution:** Active workers ping the `workers` table every 15 seconds on a background thread. Before claiming a new job, workers run a `recover_stale_jobs` check.
-- **The Math:** If a job is marked `processing` but its lock hasn't received a heartbeat in **40 seconds**, the system intelligently declares the original worker dead, applies a backoff penalty, and instantly re-queues the orphaned job.
+### 3. Native Multiprocessing (`os.fork`)
+When you run `./queuectl worker start --count 3`, the backend does not cheat by using Python threads (which are bound by the Global Interpreter Lock). Instead, it calls `os.fork()` to branch the main process into true native Linux/macOS child processes. Each worker gets its own memory space and runs completely independently.
 
-### 🔄 Exponential Backoff & Dead Letter Queue (DLQ)
+### 4. 40-Second Crash Recovery (Heartbeats)
+If a worker process is brutally terminated (e.g., via `kill -9` or `SIGKILL`), no cleanup handler will run, and the job it was processing becomes orphaned.
+- **The Solution:** Active workers spin up a lightweight daemon thread (`threading.Thread`) that pings the `workers` database table every 15 seconds. Before claiming a new job, all healthy workers run a `recover_stale_jobs` check.
+- **The Math:** If a job is marked `processing` but its lock hasn't received a heartbeat in **40 seconds**, the system intelligently declares the original worker dead, applies an exponential backoff penalty, and instantly re-queues the orphaned job.
+
+### 5. Graceful Inter-Process Communication (IPC)
+If you start workers in one terminal, how do you stop them from another? 
+When `./queuectl worker stop` is executed, the CLI reads the active PIDs from the `workers` table and fires a POSIX `SIGTERM` signal (`os.kill(pid, SIGTERM)`) directly at the processes. The workers trap this signal, explicitly wait for their currently executing bash subprocess to finish naturally, update the job status, and then cleanly exit.
+
+### 6. Exponential Backoff & Dead Letter Queue (DLQ)
 Jobs that return a non-zero exit code (e.g., `exit 1`) are retried utilizing a dynamic exponential backoff algorithm: `delay = (backoff-base) ^ attempts`. 
 Once the configurable retry limit is exhausted, the job is moved to a Dead Letter Queue (`state = 'dead'`). From the DLQ, system administrators can interactively "Retry" (resetting attempts to 0) or "Purge" dead jobs directly from the visual dashboard.
 
