@@ -174,7 +174,7 @@ The `queuectl` CLI is the heart of the system. It uses `argparse` to route comma
 ### Managing Jobs
 | Command | Description |
 |---------|-------------|
-| `./queuectl enqueue "<command>"` | Adds a new job to the pending queue. Returns the Job ID. |
+| `./queuectl enqueue '{"id": "job-123", "command": "echo hi"}'` | Adds a new job to the pending queue via JSON string. |
 
 ### Managing Workers
 | Command | Description |
@@ -187,6 +187,7 @@ The `queuectl` CLI is the heart of the system. It uses `argparse` to route comma
 |---------|-------------|
 | `./queuectl config set max-retries <N>` | Sets the maximum number of times a failing job will retry before hitting the DLQ. (Locked in at job creation time). |
 | `./queuectl config set backoff-base <N>` | Sets the base for exponential backoff math. (Dynamically evaluated upon next job failure). |
+| `./queuectl config set job-timeout <N>` | Sets the maximum execution time (in seconds) before a worker forcefully kills a hanging job. |
 
 ### Dead Letter Queue Operations
 | Command | Description |
@@ -224,7 +225,7 @@ Launch the zero-dependency Python HTTP server and API:
 ```bash
 ./queuectl dashboard --port 8080
 ```
-Open `http://localhost:8080` in your browser. You can enqueue jobs directly from the UI or via CLI (`./queuectl enqueue "sleep 2"`).
+Open `http://localhost:8080` in your browser. You can enqueue jobs directly from the UI or via CLI (`./queuectl enqueue '{"id":"test-1", "command":"sleep 2"}'`).
 
 ---
 
@@ -268,7 +269,7 @@ The system is designed to be easily deployed to the cloud.
 ## ✦ Database Schema
 
 QueueCTL uses a highly optimized SQLite schema. 
-- **`jobs` table:** Stores `id`, `command`, `state`, `attempts`, `max_retries`, `run_after`, `locked_by`, and `heartbeat_at`. Indexed by `(state, run_after)` for lightning-fast subqueries.
+- **`jobs` table:** Stores `id`, `command`, `state`, `attempts`, `max_retries`, `run_after`, `locked_by`, `heartbeat_at`, `created_at`, and `updated_at`. Indexed by `(state, run_after)` for lightning-fast subqueries.
 - **`workers` table:** Tracks active worker `pid`, `status`, and `heartbeat_at` for IPC signaling and cross-process health monitoring.
 - **`config` table:** A simple Key-Value store for runtime configuration adjustments.
 
