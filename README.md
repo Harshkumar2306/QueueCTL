@@ -61,14 +61,25 @@
 ---
 
 ## 📑 Table of Contents
-1. [System Architecture](#-system-architecture)
-2. [Deep Dive: Engineering Features](#-deep-dive-engineering-features)
-3. [CLI Reference Guide](#-cli-reference-guide)
-4. [Local Setup & Testing](#-local-setup--testing)
-5. [Automated Test Suite](#-automated-test-suite)
-6. [Cloud Deployment](#-cloud-deployment-render--vercel)
-7. [Database Schema](#-database-schema)
-8. [Evaluation Criteria Checklist](#-evaluation-criteria-checklist)
+1. [Live Environments](#-live-environments)
+2. [System Architecture](#-system-architecture)
+3. [Deep Dive: Engineering Features](#-deep-dive-engineering-features)
+4. [CLI Reference Guide](#-cli-reference-guide)
+5. [Local Setup & Testing](#-local-setup--testing)
+6. [Automated Test Suite](#-automated-test-suite)
+7. [Cloud Deployment](#-cloud-deployment-render--vercel)
+8. [Database Schema](#-database-schema)
+9. [Evaluation Criteria Checklist](#-evaluation-criteria-checklist)
+
+---
+
+## 🌐 Live Environments
+
+| Resource | Link |
+| :--- | :--- |
+| **💻 Web Dashboard (Vercel)** | [https://queuectl-one.vercel.app](https://queuectl-one.vercel.app) |
+| **⚙️ Backend API (Render)** | [https://queuectl-sl39.onrender.com](https://queuectl-sl39.onrender.com) |
+| **📁 Source Code** | [GitHub Repository](https://github.com/Harshkumar2306/QueueCTL) |
 
 ---
 
