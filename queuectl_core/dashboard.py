@@ -3,14 +3,15 @@ import json
 import os
 import sqlite3
 from urllib.parse import urlparse
+from typing import Any
 from .db import get_connection
 
 class DashboardHandler(http.server.BaseHTTPRequestHandler):
-    def log_message(self, format, *args):
+    def log_message(self, format: str, *args: Any) -> None:
         # Suppress default logging to keep CLI clean
         pass
 
-    def do_GET(self):
+    def do_GET(self) -> None:
         parsed = urlparse(self.path)
         path = parsed.path
         
@@ -19,14 +20,14 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         else:
             self.serve_static(path)
 
-    def do_OPTIONS(self):
+    def do_OPTIONS(self) -> None:
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
-    def do_POST(self):
+    def do_POST(self) -> None:
         parsed = urlparse(self.path)
         path = parsed.path
         
@@ -87,7 +88,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         else:
             self.send_error(404)
 
-    def retry_job(self, job_id):
+    def retry_job(self, job_id: str) -> None:
         conn = get_connection()
         try:
             with conn:
@@ -103,7 +104,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         except Exception as e:
             self.send_error(500, str(e))
             
-    def handle_api(self, path):
+    def handle_api(self, path: str) -> None:
         conn = get_connection()
         cur = conn.cursor()
         
@@ -133,14 +134,14 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         else:
             self.send_error(404)
 
-    def send_json(self, data):
+    def send_json(self, data: Any) -> None:
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(json.dumps(data).encode('utf-8'))
 
-    def serve_static(self, path):
+    def serve_static(self, path: str) -> None:
         if path == "/":
             path = "/index.html"
             
@@ -168,7 +169,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         except Exception as e:
             self.send_error(404)
 
-def run_server(port=8080):
+def run_server(port: int = 8080) -> None:
     server_address = ('', port)
     httpd = http.server.ThreadingHTTPServer(server_address, DashboardHandler)
     print(f"QueueCTL Dashboard running at http://localhost:{port}")

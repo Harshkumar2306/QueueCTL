@@ -2,15 +2,16 @@ import sqlite3
 import os
 import json
 from datetime import datetime
+from typing import Optional, Any
 
 # Default db path
 DEFAULT_DIR = os.path.expanduser("~/.queuectl")
 DEFAULT_DB_PATH = os.path.join(DEFAULT_DIR, "queue.db")
 
-def get_db_path():
+def get_db_path() -> str:
     return os.environ.get("QUEUECTL_DB_PATH", DEFAULT_DB_PATH)
 
-def get_connection(db_path=None):
+def get_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
     path = db_path or get_db_path()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     
@@ -20,7 +21,7 @@ def get_connection(db_path=None):
     conn.row_factory = sqlite3.Row
     return conn
 
-def init_db(db_path=None):
+def init_db(db_path: Optional[str] = None) -> None:
     conn = get_connection(db_path)
     # Check if initialized to avoid write locks on every CLI call
     cur = conn.cursor()
@@ -71,14 +72,14 @@ def init_db(db_path=None):
         """)
     conn.close()
 
-def get_config(key, default, db_path=None):
+def get_config(key: str, default: str, db_path: Optional[str] = None) -> str:
     conn = get_connection(db_path)
     cur = conn.cursor()
     cur.execute("SELECT value FROM config WHERE key = ?", (key,))
     row = cur.fetchone()
     return row["value"] if row else default
 
-def set_config(key, value, db_path=None):
+def set_config(key: str, value: Any, db_path: Optional[str] = None) -> None:
     conn = get_connection(db_path)
     with conn:
         conn.execute(

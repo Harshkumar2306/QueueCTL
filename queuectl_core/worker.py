@@ -6,22 +6,23 @@ import signal
 import threading
 from datetime import datetime, timezone
 import json
+from typing import Any
 
 from .db import get_connection, get_config
 
 shutdown_requested = False
 
-def handle_sigterm(signum, frame):
+def handle_sigterm(signum: int, frame: Any) -> None:
     global shutdown_requested
     shutdown_requested = True
 
 signal.signal(signal.SIGTERM, handle_sigterm)
 signal.signal(signal.SIGINT, handle_sigterm)
 
-def now_iso():
+def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
-def recover_stale_jobs(conn, worker_id):
+def recover_stale_jobs(conn: sqlite3.Connection, worker_id: int) -> None:
     # If a job is in 'processing' but heartbeat_at is older than 45 seconds,
     # we consider the worker dead and recover the job.
     # SQLite datetime('now', '-45 seconds') works for ISO-8601 strings.
@@ -70,7 +71,7 @@ def recover_stale_jobs(conn, worker_id):
                     WHERE id = ?
                 """, (attempts, job['id']))
 
-def heartbeat_worker(conn, pid):
+def heartbeat_worker(conn: sqlite3.Connection, pid: int) -> None:
     while not shutdown_requested:
         try:
             with conn:
@@ -79,14 +80,14 @@ def heartbeat_worker(conn, pid):
             pass
         time.sleep(15)
 
-def heartbeat_job(conn, job_id):
+def heartbeat_job(conn: sqlite3.Connection, job_id: str) -> None:
     try:
         with conn:
             conn.execute("UPDATE jobs SET heartbeat_at = datetime('now') WHERE id = ?", (job_id,))
     except Exception:
         pass
 
-def run_worker(count=1):
+def run_worker(count: int = 1) -> None:
     if count > 1:
         children = []
         for _ in range(count - 1):
@@ -104,7 +105,7 @@ def run_worker(count=1):
     else:
         run_single_worker()
 
-def run_single_worker():
+def run_single_worker() -> None:
     pid = os.getpid()
     conn = get_connection()
     
@@ -163,23 +164,36 @@ def run_single_worker():
             jhb = threading.Thread(target=job_hb, daemon=True)
             jhb.start()
 
+            job_timeout_str = get_config('job-timeout', '3600')
+            try:
+                job_timeout = float(job_timeout_str)
+            except ValueError:
+                job_timeout = 3600.0
+
             # Execute command
             # Using shell=True as per requirements
             proc = subprocess.Popen(command, shell=True)
             
-            # Wait for it, checking for shutdown occasionally
+            # Wait for it, checking for shutdown occasionally and enforcing timeout
+            start_time = time.time()
+            timed_out = False
             while proc.poll() is None:
-                if shutdown_requested:
-                    # Requirements say: "Graceful shutdown: on worker stop or Ctrl+C, finish the in-flight job."
-                    # So we just wait for it to finish.
-                    proc.wait()
+                # Even if shutdown is requested, we allow the job to finish, 
+                # but we still enforce the timeout to prevent indefinite hanging.
+                if time.time() - start_time > job_timeout:
+                    proc.kill()
+                    proc.wait() # Reap the zombie
+                    timed_out = True
                     break
                 time.sleep(0.1)
 
             job_hb_stop.set()
             jhb.join()
 
-            exit_code = proc.returncode
+            if timed_out:
+                exit_code = 124 # Standard exit code for timeout
+            else:
+                exit_code = proc.returncode
 
             with conn:
                 if exit_code == 0:

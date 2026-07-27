@@ -133,4 +133,24 @@ if [ -z "$IS_COMPLETED" ]; then
 fi
 echo "PASS: Scenario 5"
 
+echo "=== Scenario 6: Job Timeout ==="
+rm -f "$DB_PATH" "$DB_PATH-wal" "$DB_PATH-shm"
+$QCTL config set max-retries 0
+$QCTL config set backoff-base 1
+$QCTL config set job-timeout 2
+
+$QCTL enqueue '{"id":"job-timeout","command":"sleep 10"}'
+$QCTL worker start --count 1 &
+WORKER_PID7=$!
+sleep 5 # Wait for 2s timeout and failure processing
+$QCTL worker stop
+wait $WORKER_PID7 || true
+
+STATUS=$($QCTL list --state dead --json | grep '"id": "job-timeout"')
+if [ -z "$STATUS" ]; then
+    echo "FAIL: Scenario 6 - Job did not timeout and enter dead state"
+    exit 1
+fi
+echo "PASS: Scenario 6"
+
 echo "All scenarios passed successfully!"

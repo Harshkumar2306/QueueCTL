@@ -4,15 +4,16 @@ import sys
 import os
 import signal
 from datetime import datetime
+from typing import Any, Optional, Dict
 
 from .db import init_db, get_connection, set_config, get_config
 from .worker import run_worker
 from .dashboard import run_server
 
-def print_json(data):
+def print_json(data: Any) -> None:
     print(json.dumps(data))
 
-def get_job_by_id(job_id):
+def get_job_by_id(job_id: str) -> Optional[Dict[str, Any]]:
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT * FROM jobs WHERE id = ?", (job_id,))
@@ -21,7 +22,7 @@ def get_job_by_id(job_id):
         return dict(row)
     return None
 
-def cmd_enqueue(args):
+def cmd_enqueue(args: argparse.Namespace) -> None:
     try:
         data = json.loads(args.job_json)
     except json.JSONDecodeError:
@@ -48,11 +49,11 @@ def cmd_enqueue(args):
             print(f"Job with id {job_id} already exists")
             sys.exit(1)
 
-def cmd_worker_start(args):
+def cmd_worker_start(args: argparse.Namespace) -> None:
     print(f"Starting {args.count} workers...")
     run_worker(count=args.count)
 
-def cmd_worker_stop(args):
+def cmd_worker_stop(args: argparse.Namespace) -> None:
     # stop workers gracefully
     conn = get_connection()
     cur = conn.cursor()
@@ -75,7 +76,7 @@ def cmd_worker_stop(args):
         except Exception as e:
             print(f"Failed to signal worker PID {pid}: {e}")
             
-def cmd_status(args):
+def cmd_status(args: argparse.Namespace) -> None:
     conn = get_connection()
     cur = conn.cursor()
     
@@ -95,7 +96,7 @@ def cmd_status(args):
     for w in workers:
         print(f"  PID {w['pid']} (started at {w['started_at']}, last heartbeat {w['heartbeat_at']})")
 
-def cmd_list(args):
+def cmd_list(args: argparse.Namespace) -> None:
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT * FROM jobs WHERE state = ?", (args.state,))
@@ -110,11 +111,11 @@ def cmd_list(args):
         for job in jobs:
             print(f"[{job['id']}] {job['command']} (attempts: {job['attempts']}/{job['max_retries']})")
 
-def cmd_dlq_list(args):
+def cmd_dlq_list(args: argparse.Namespace) -> None:
     args.state = 'dead'
     cmd_list(args)
 
-def cmd_dlq_retry(args):
+def cmd_dlq_retry(args: argparse.Namespace) -> None:
     job_id = args.id
     conn = get_connection()
     # Reset attempts to 0 so it gets the full retry logic again.
@@ -131,20 +132,20 @@ def cmd_dlq_retry(args):
         else:
             print(f"Job {job_id} not found in DLQ.")
 
-def cmd_config_set(args):
+def cmd_config_set(args: argparse.Namespace) -> None:
     key = args.key
     value = args.value
-    if key not in ['max-retries', 'backoff-base']:
+    if key not in ['max-retries', 'backoff-base', 'job-timeout']:
         print(f"Unknown config key: {key}")
         sys.exit(1)
     
     set_config(key, value)
     print(f"Config '{key}' set to '{value}'")
 
-def cmd_dashboard(args):
+def cmd_dashboard(args: argparse.Namespace) -> None:
     run_server(port=args.port)
 
-def main():
+def main() -> None:
     import sqlite3 # local import for catching exceptions
     init_db()
 

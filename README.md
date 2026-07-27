@@ -156,6 +156,9 @@ When `./queuectl worker stop` is executed, the CLI reads the active PIDs from th
 Jobs that return a non-zero exit code (e.g., `exit 1`) are retried utilizing a dynamic exponential backoff algorithm: `delay = (backoff-base) ^ attempts`. 
 Once the configurable retry limit is exhausted, the job is moved to a Dead Letter Queue (`state = 'dead'`). From the DLQ, system administrators can interactively "Retry" (resetting attempts to 0) or "Purge" dead jobs directly from the visual dashboard.
 
+### 7. Execution Reliability (Job Timeouts)
+A maliciously or accidentally hanging bash script (e.g., `sleep infinity`) will no longer block a worker indefinitely. Workers actively enforce a configurable `job-timeout` to kill the subprocess, reap the zombie process, and transition the job into the failure flow. 
+
 ### 🖥️ Ultra-Premium Glassmorphic Dashboard
 A breathtaking, real-time frontend UI built completely without frameworks (No React, No NPM).
 - **Aesthetic:** Features a meticulously crafted Neo-Brutalist/Glassmorphic "Twilight" theme.
@@ -227,13 +230,14 @@ Open `http://localhost:8080` in your browser. You can enqueue jobs directly from
 
 ## ✦ Automated Test Suite
 
-We've included a rigorous automated bash testing suite (`test_queuectl.sh`) that validates the engine under extreme stress. It explicitly tests 5 critical enterprise scenarios:
+We've included a rigorous automated bash testing suite (`test_queuectl.sh`) that validates the engine under extreme stress. It explicitly tests 6 critical enterprise scenarios:
 
 1. **Scenario 1:** A basic job completes successfully.
 2. **Scenario 2:** A failing job exhausts retries and lands in the DLQ.
 3. **Scenario 3:** High concurrency (many jobs executing across multiple workers).
 4. **Scenario 4:** A worker is brutally `SIGKILL`ed mid-execution, and a surviving worker successfully detects and recovers the orphaned job.
 5. **Scenario 5:** Jobs survive persistent storage across full backend restarts.
+6. **Scenario 6:** A job exceeding the global timeout is forcefully killed, reaped, and failed.
 
 Run the suite yourself:
 ```bash
@@ -276,9 +280,9 @@ QueueCTL uses a highly optimized SQLite schema.
 |----------|----------------|--------|
 | **Core Queue** | Persistent SQLite backend utilizing atomic locking (`UPDATE RETURNING`). | ✅ PASS |
 | **Concurrency** | Native `os.fork()` multi-process worker architecture running safely across multiple environments. | ✅ PASS |
-| **Reliability** | Mathematically proven exponential backoff, DLQ management, and exact 40-second worker heartbeat crash recovery. | ✅ PASS |
+| **Reliability** | Transactionally safe job queue with exponential backoff, DLQ management, enforced job timeouts, and strict crash recovery. | ✅ PASS |
 | **UX & Dashboard** | A visually stunning, real-time Twilight Glassmorphic frontend hosted on Vercel. | ✅ PASS |
-| **Code Quality** | Zero external dependencies. Modular Python architecture rigorously tested by an automated bash suite. | ✅ PASS |
+| **Code Quality** | Zero external dependencies. Fully type-hinted Python architecture rigorously tested by an automated bash suite. | ✅ PASS |
 
 <br>
 
