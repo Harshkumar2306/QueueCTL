@@ -95,8 +95,8 @@ graph TD
         subgraph Workers ["queuectl_core/worker.py"]
             W1("⚙️ Parent/Child Process (os.fork)"):::process
             
-            HB_W(("💓 Worker Heartbeat")):::process
-            HB_J(("💓 Job Heartbeat")):::process
+            HB_W(("Worker Heartbeat")):::process
+            HB_J(("Job Heartbeat")):::process
             
             W1 ---|"Spawns daemon threads"| HB_W
             W1 ---|"Spawns daemon threads"| HB_J
