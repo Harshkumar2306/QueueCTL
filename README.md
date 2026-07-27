@@ -86,52 +86,42 @@ graph TD
     classDef cli fill:#1e293b,stroke:#f43f5e,stroke-width:2px,color:#f8fafc
 
     subgraph UserSpace ["User Interaction Layer"]
-        CLI("🖥️ QueueCTL CLI"):::cli
-        UI("✨ Vercel Glassmorphic Dashboard"):::frontend
+        CLI("🖥️ queuectl_core/cli.py (argparse)"):::cli
+        UI("✨ Vanilla JS Dashboard (app.js)"):::frontend
     end
 
-    subgraph Backend ["Backend Engine (Render / Local OS)"]
-        API["🌐 HTTP API Server (dashboard.py)"]:::backend
+    subgraph Backend ["Backend Engine (Python Native)"]
+        API["🌐 dashboard.py (http.server)"]:::backend
         
-        subgraph Workers ["Parallel Worker Processes (os.fork)"]
-            W1("⚙️ Worker PID 1"):::process
-            W2("⚙️ Worker PID 2"):::process
-            WN("⚙️ Worker PID N"):::process
+        subgraph Workers ["queuectl_core/worker.py"]
+            W1("⚙️ Parent/Child Process (os.fork)"):::process
             
-            HB1(("💓 Daemon Thread")):::process
-            HB2(("💓 Daemon Thread")):::process
-            HBN(("💓 Daemon Thread")):::process
+            HB1(("💓 threading.Thread")):::process
             
-            W1 --- HB1
-            W2 --- HB2
-            WN --- HBN
+            W1 ---|"Spawns daemon thread"| HB1
         end
         
-        CLI -.->|"os.kill(SIGTERM)"| Workers
+        CLI -.->|"os.kill(pid, SIGTERM)"| Workers
+        Workers -.->|"subprocess.Popen(shell=True)"| Bash["Bash Execution"]
     end
 
-    subgraph Database ["Persistent Storage Layer"]
-        DB[("🗄️ SQLite Database")]:::storage
-        WAL["📝 Write-Ahead Log (WAL)"]:::storage
-        DLQ["💀 Dead Letter Queue"]:::storage
+    subgraph Database ["queuectl_core/db.py"]
+        DB[("🗄️ queue.db")]:::storage
+        WAL["📝 PRAGMA journal_mode=WAL"]:::storage
         
         DB --- WAL
     end
 
     %% Routing & Data Flow
-    UI ==>|"REST API Fetch/POST (CORS)"| API
-    CLI ==>|"enqueue / config / worker start"| DB
-    API ==>|"Read / Write State"| DB
+    UI ==>|"Fetch() / REST API"| API
+    CLI ==>|"INSERT INTO jobs"| DB
+    API ==>|"SELECT (Read-Only)"| DB
     
-    W1 ==>|"UPDATE...RETURNING (Atomic Lock)"| DB
-    W2 ==>|"UPDATE...RETURNING (Atomic Lock)"| DB
-    WN ==>|"UPDATE...RETURNING (Atomic Lock)"| DB
+    W1 ==>|"UPDATE jobs SET state='processing' RETURNING *"| DB
     
-    HB1 -.->|"Ping 15s (Health)"| DB
-    HB2 -.->|"Ping 15s (Health)"| DB
-    HBN -.->|"Ping 15s (Health)"| DB
+    HB1 -.->|"UPDATE workers SET heartbeat_at=now()"| DB
     
-    W1 -.->|"Retry Exhausted"| DLQ
+    W1 -.->|"UPDATE jobs SET state='dead'"| DB
 ```
 
 ---
