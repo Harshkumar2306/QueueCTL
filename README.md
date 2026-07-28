@@ -68,7 +68,6 @@
 | **💻 Web Dashboard (Vercel)** | [https://queuectl-one.vercel.app](https://queuectl-one.vercel.app) |
 | **📹 CLI Demo Video** | [Watch on Google Drive](https://drive.google.com/file/d/1wGSz9YFVSyc9yrLLCRV2ePhnUQW0BAX-/view?usp=sharing) |
 | **⚙️ Backend API (Render)** | [https://queuectl-sl39.onrender.com](https://queuectl-sl39.onrender.com) |
-| **📁 Source Code** | [GitHub Repository](https://github.com/Harshkumar2306/QueueCTL) |
 
 ---
 
