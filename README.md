@@ -134,6 +134,28 @@ graph TD
 
 ---
 
+## ✦ Project Structure
+
+```text
+QueueCTL/
+├── queuectl                  # The main CLI entrypoint (executable)
+├── queuectl_core/            # Python backend engine
+│   ├── cli.py                # Argument parsing and command routing
+│   ├── worker.py             # Multiprocessing, heartbeats, and job execution
+│   ├── db.py                 # SQLite WAL connection and atomic transactions
+│   └── dashboard.py          # Zero-dependency HTTP server & REST API
+├── frontend/                 # Vanilla web dashboard
+│   ├── index.html            # UI Structure
+│   ├── app.js                # UI Logic & API fetching
+│   └── style.css             # Glassmorphic styling
+├── test_queuectl.sh          # Rigorous automated bash testing suite
+├── DECISIONS.md              # Architectural deep-dive & interview answers
+├── Dockerfile                # Render deployment configuration
+└── start.sh                  # Container startup script
+```
+
+---
+
 ## ✦ Deep Dive: Backend Architecture & Engineering
 
 QueueCTL's backend (`queuectl_core`) is engineered purely in Python without any external dependencies. It leverages native OS features to handle multiprocessing and signaling. 
