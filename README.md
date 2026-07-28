@@ -46,7 +46,7 @@
       </td>
       <td align="center" width="250">
         <br/>
-        <a href="#">
+        <a href="https://drive.google.com/file/d/1wGSz9YFVSyc9yrLLCRV2ePhnUQW0BAX-/view?usp=sharing">
           <img src="https://img.shields.io/badge/📹%20CLICK%20TO%20WATCH%20DEMO%20VIDEO-1A1A1A?style=for-the-badge" alt="Demo Video" />
         </a>
         <br/>
@@ -66,6 +66,7 @@
 | Resource | Link |
 | :--- | :--- |
 | **💻 Web Dashboard (Vercel)** | [https://queuectl-one.vercel.app](https://queuectl-one.vercel.app) |
+| **📹 CLI Demo Video** | [Watch on Google Drive](https://drive.google.com/file/d/1wGSz9YFVSyc9yrLLCRV2ePhnUQW0BAX-/view?usp=sharing) |
 | **⚙️ Backend API (Render)** | [https://queuectl-sl39.onrender.com](https://queuectl-sl39.onrender.com) |
 | **📁 Source Code** | [GitHub Repository](https://github.com/Harshkumar2306/QueueCTL) |
 
