@@ -4,7 +4,7 @@ This document explains the core design decisions for **QueueCTL**, answering the
 
 ## 1. Which exact line(s) prevent two workers from claiming the same job, and why is that operation atomic across separate OS processes?
 
-In `queuectl_core/worker.py` (around line 105), the job claiming logic relies on this SQL query:
+In `queuectl_core/worker.py` (line 127), the job claiming logic relies on this SQL query:
 
 ```sql
 UPDATE jobs 
@@ -22,7 +22,7 @@ WHERE id = (
 RETURNING id, command, attempts, max_retries;
 ```
 
-**Why it's atomic:** The claim operation is a single SQL statement executed inside a database transaction. SQLite serializes conflicting write transactions, meaning only one worker can successfully claim a given job at a time. Furthermore, we connect to SQLite with `isolation_level="IMMEDIATE"`. `BEGIN IMMEDIATE` acquires a reserved write lock as soon as the transaction begins rather than waiting for the first write statement. This reduces contention and avoids races between competing writers. Finally, using `RETURNING *` avoids a second `SELECT` after the `UPDATE`, ensuring the database returns the updated row as part of the exact same atomic operation.
+**Why it's atomic:** The claim operation is a single SQL statement executed inside a database transaction. SQLite serializes conflicting write transactions, meaning only one worker can successfully claim a given job at a time. Furthermore, we connect to SQLite with `isolation_level="IMMEDIATE"`. `BEGIN IMMEDIATE` acquires a reserved write lock as soon as the transaction begins rather than waiting for the first write statement. This reduces contention and avoids races between competing writers. Finally, using `RETURNING id, command, attempts, max_retries` avoids a second `SELECT` after the `UPDATE`, ensuring the database returns the claimed row as part of the exact same atomic operation.
 
 ## 2. A worker is SIGKILLed halfway through a job. Walk through, step by step, what state the job is in and how it eventually runs again. What is the worst-case delay before recovery?
 
@@ -73,7 +73,7 @@ Redis is excellent for high-throughput distributed queues, but this assignment r
 **What happens if power is lost while SQLite is writing?**
 SQLite transactions are atomic. If power is lost before the commit finishes, the transaction is rolled back upon reboot. If the commit completes successfully, the changes are durable. The WAL (Write-Ahead Logging) mode is explicitly designed to maintain consistency and recover gracefully even across total system power failures.
 
-## 6. Do config changes affect already-enqueued jobs?
+## 7. Do config changes affect already-enqueued jobs?
 
 Yes, but conditionally based on the job's current state:
 - **`max-retries`:** This config is locked in at the moment the job is created (it is stored in the `jobs` table as `max_retries`). Changing the global config will **not** affect already-enqueued jobs; they will respect their original maximum limit.

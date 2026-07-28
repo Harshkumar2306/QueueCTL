@@ -93,7 +93,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         try:
             with conn:
                 conn.execute(
-                    "UPDATE jobs SET state = 'pending', attempts = 0, run_after = NULL, locked_by = NULL WHERE id = ? AND state = 'dead'",
+                    "UPDATE jobs SET state = 'pending', attempts = 0, run_after = NULL, locked_by = NULL, heartbeat_at = NULL, updated_at = datetime('now') WHERE id = ? AND state = 'dead'",
                     (job_id,)
                 )
             self.send_response(200)

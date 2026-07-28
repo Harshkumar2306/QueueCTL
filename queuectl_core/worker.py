@@ -4,8 +4,6 @@ import subprocess
 import os
 import signal
 import threading
-from datetime import datetime, timezone
-import json
 from typing import Any
 
 from .db import get_connection, get_config
@@ -19,13 +17,12 @@ def handle_sigterm(signum: int, frame: Any) -> None:
 signal.signal(signal.SIGTERM, handle_sigterm)
 signal.signal(signal.SIGINT, handle_sigterm)
 
-def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+
 
 def recover_stale_jobs(conn: sqlite3.Connection, worker_id: int) -> None:
-    # If a job is in 'processing' but heartbeat_at is older than 45 seconds,
+    # If a job is in 'processing' but heartbeat_at is older than 40 seconds,
     # we consider the worker dead and recover the job.
-    # SQLite datetime('now', '-45 seconds') works for ISO-8601 strings.
+    # SQLite datetime('now', '-40 seconds') works for ISO-8601 strings.
     # Note: we use python's datetime if we are dealing with pure strings or sqlite builtin.
     # We'll use sqlite builtin for simplicity.
     with conn:

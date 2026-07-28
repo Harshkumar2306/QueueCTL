@@ -1,26 +1,15 @@
 import argparse
 import json
+import sqlite3
 import sys
 import os
 import signal
-from datetime import datetime
-from typing import Any, Optional, Dict
 
 from .db import init_db, get_connection, set_config, get_config
 from .worker import run_worker
 from .dashboard import run_server
 
-def print_json(data: Any) -> None:
-    print(json.dumps(data))
 
-def get_job_by_id(job_id: str) -> Optional[Dict[str, Any]]:
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM jobs WHERE id = ?", (job_id,))
-    row = cur.fetchone()
-    if row:
-        return dict(row)
-    return None
 
 def cmd_enqueue(args: argparse.Namespace) -> None:
     try:

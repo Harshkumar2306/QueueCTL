@@ -9,10 +9,10 @@
                                                  
 </pre>
 
-<h3>The Ultimate Distributed Background Job Queue</h3>
+<h3>A Robust Background Job Queue System</h3>
 
 <p align="center">
-  A production-grade background job queue system engineered for flawless concurrency, crash-resilience, and stunning aesthetics. 
+  A production-grade background job queue system engineered for robust concurrency, crash-resilience, and clean architecture. 
   <br/>Built purely in Python and standard web technologies—zero external dependencies required.
 </p>
 
@@ -247,7 +247,7 @@ Run the suite yourself:
 ```bash
 ./test_queuectl.sh
 ```
-*Guaranteed 100% pass rate.*
+*All 6 scenarios pass consistently.*
 
 ---
 

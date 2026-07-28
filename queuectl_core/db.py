@@ -1,7 +1,5 @@
 import sqlite3
 import os
-import json
-from datetime import datetime
 from typing import Optional, Any
 
 # Default db path
@@ -16,7 +14,7 @@ def get_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     
     # isolation_level="IMMEDIATE" forces BEGIN IMMEDIATE, preventing deadlocks when multiple workers write.
-    conn = sqlite3.connect(path, timeout=10, isolation_level="IMMEDIATE")
+    conn = sqlite3.connect(path, timeout=10, isolation_level="IMMEDIATE", check_same_thread=False)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.row_factory = sqlite3.Row
     return conn
