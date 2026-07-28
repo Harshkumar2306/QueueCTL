@@ -138,20 +138,22 @@ graph TD
 
 ```text
 QueueCTL/
-├── queuectl                  # The main CLI entrypoint (executable)
+├── queuectl                  # The main CLI executable (routes to cli.py)
 ├── queuectl_core/            # Python backend engine
+│   ├── __init__.py           # Makes the directory a Python package
 │   ├── cli.py                # Argument parsing and command routing
-│   ├── worker.py             # Multiprocessing, heartbeats, and job execution
 │   ├── db.py                 # SQLite WAL connection and atomic transactions
+│   ├── worker.py             # Multiprocessing, heartbeats, and job execution
 │   └── dashboard.py          # Zero-dependency HTTP server & REST API
 ├── frontend/                 # Vanilla web dashboard
 │   ├── index.html            # UI Structure
-│   ├── app.js                # UI Logic & API fetching
-│   └── style.css             # Glassmorphic styling
-├── test_queuectl.sh          # Rigorous automated bash testing suite
+│   ├── style.css             # Glassmorphic styling
+│   └── app.js                # UI Logic & API fetching
 ├── DECISIONS.md              # Architectural deep-dive & interview answers
+├── test_queuectl.sh          # Rigorous automated bash testing suite
 ├── Dockerfile                # Render deployment configuration
-└── start.sh                  # Container startup script
+├── start.sh                  # Container startup script
+└── .gitignore                # Git ignore rules
 ```
 
 ---
